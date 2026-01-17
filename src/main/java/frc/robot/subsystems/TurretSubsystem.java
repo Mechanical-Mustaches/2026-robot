@@ -9,6 +9,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -60,13 +61,25 @@ public class TurretSubsystem implements Subsystem {
         this.getSwerveState = getSwerveState;
     }
 
-    private TargetPosition getTargetPosition(){
-        return TargetPosition.Hub
+    private TargetPosition getTargetPosition() {
+        // TODO: Return the right position
+        return null;
     }
 
     @Override
     public void periodic() {
+        var targetPosition = getTargetPosition();
+
+        if (targetPosition == null) {
+            return;
+        }
+
         var currentState = this.getSwerveState.get();
+
+        var angle = Math.atan2(targetPosition.point.y - currentState.Pose.getY(),
+                targetPosition.point.x - currentState.Pose.getX());
+        azimuthMotor.getClosedLoopController().setSetpoint(angle, ControlType.kPosition);
+
     }
 
 }
