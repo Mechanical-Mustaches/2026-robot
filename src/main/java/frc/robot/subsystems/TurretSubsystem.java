@@ -61,6 +61,10 @@ public class TurretSubsystem implements Subsystem {
         this.getSwerveState = getSwerveState;
     }
 
+        /**
+         * 
+         * @return returns null when the robot is not in a valid position to score. Otherwise, returns a point.
+         */
     private TargetPosition getTargetPosition() {
         // TODO: Return the right position
         return null;
@@ -71,6 +75,7 @@ public class TurretSubsystem implements Subsystem {
         var targetPosition = getTargetPosition();
 
         if (targetPosition == null) {
+            //TODO: make leds light red when target position is null
             return;
         }
 

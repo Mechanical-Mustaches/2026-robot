@@ -8,7 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
 
@@ -52,7 +52,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         
-        turretSubsystem = new TurretSubsystem()
+        turretSubsystem = new TurretSubsystem(this.drivetrain::getState);
 
 
 
@@ -65,11 +65,6 @@ public class RobotContainer {
         FollowPathCommand.warmupCommand().schedule();
     }
 
-    private Pose2d getRobotPose() {
-        var state = this.drivetrain.getState();
-
-        return state.Pose;
-    }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
