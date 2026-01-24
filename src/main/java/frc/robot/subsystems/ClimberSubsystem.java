@@ -17,8 +17,10 @@ public class ClimberSubsystem implements Subsystem {
 
     private static int MAIN_EXTEND_RANGE = -1;
     private static int SECONDARY_EXTEND_RANGE = -1;
+
     private static int MAIN_CLIMB_RANGE = 1;
     private static int SECONDARY_CLIMB_RANGE = 1;
+
     private static double MAIN_TOLERANCE = 0.1;
     private static double SECONDARY_TOLERANCE = 0.1;
 
@@ -48,7 +50,7 @@ public class ClimberSubsystem implements Subsystem {
         mainClimberConfig
                 // TODO: Find range of rotations needed
                 .smartCurrentLimit(40)
-                .idleMode(IdleMode.kCoast);
+                .idleMode(IdleMode.kBrake);// kBrake prevent motor from moving when force is applied
 
         mainClimberConfig.apply(mainClimberClosedLoopConfig);
 
@@ -69,7 +71,7 @@ public class ClimberSubsystem implements Subsystem {
         secondaryClimberConfig
                 // TODO: Find range of rotations needed
                 .smartCurrentLimit(40)
-                .idleMode(IdleMode.kCoast);
+                .idleMode(IdleMode.kBrake);
 
         secondaryClimberConfig.apply(secondaryClimberClosedLoopConfig);
 
@@ -141,6 +143,9 @@ public class ClimberSubsystem implements Subsystem {
     public void stop() {
         var controller = mainClimber.getClosedLoopController();
         controller.setSetpoint(0, ControlType.kPosition);
+        
+        var controller1= secondaryClimber.getClosedLoopController();
+        controller1.setSetpoint(0, ControlType.kPosition);
 
     }
 

@@ -120,8 +120,12 @@ public class RobotContainer {
 
                 // TODO: update this button in the future
                 //TODO: apply commands for buttons
-                operatorController.button(1).whileTrue(new ClimberCommand(climberSubsystem, true, 1));
-                operatorController.button(0).whileTrue(new ClimberCommand(climberSubsystem, true, 0));
+                 operatorController.button(1).onTrue(new ClimberCommand(climberSubsystem, true, 1));// while press moves robot up
+                 operatorController.button(1).onFalse(new ClimberCommand(climberSubsystem, true, 1));// when released moves robor down
+                
+                operatorController.button(0).onTrue(new ClimberCommand(climberSubsystem, true, 0));// while press moves robot up
+                 operatorController.button(0).onFalse(new ClimberCommand(climberSubsystem, true, 0));// when released moves robor down
+                
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
