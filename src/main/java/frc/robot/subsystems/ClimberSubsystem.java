@@ -15,72 +15,133 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class ClimberSubsystem implements Subsystem {
 
-    private static int EXTEND_RANGE = -1;
-    private static int CLIMB_RANGE = 1;
-    private static double TOLERANCE = 0.1;
+    private static int MAIN_EXTEND_RANGE = -1;
+    private static int SECONDARY_EXTEND_RANGE = -1;
+    private static int MAIN_CLIMB_RANGE = 1;
+    private static int SECONDARY_CLIMB_RANGE = 1;
+    private static double MAIN_TOLERANCE = 0.1;
+    private static double SECONDARY_TOLERANCE = 0.1;
 
-    private SparkMax climber;
-    private SparkMaxConfig climberConfig;
-    private ClosedLoopConfig climberClosedLoopConfig;
+    private SparkMax mainClimber;
+    private SparkMax secondaryClimber;
+
+    private SparkMaxConfig mainClimberConfig;
+    private SparkMaxConfig secondaryClimberConfig;
+
+    private ClosedLoopConfig mainClimberClosedLoopConfig;
+    private ClosedLoopConfig secondaryClimberClosedLoopConfig;
 
     public ClimberSubsystem() {
-        // TODO: Get motor ID
-        climber = new SparkMax(0, MotorType.kBrushless);
+        // main climber configuration:
 
-        climberConfig = new SparkMaxConfig();
+        // TODO: Get motor ID
+        mainClimber = new SparkMax(0, MotorType.kBrushless);
+
+        mainClimberConfig = new SparkMaxConfig();
 
         // TODO: Update PID constants
-        climberClosedLoopConfig = new ClosedLoopConfig()
+        mainClimberClosedLoopConfig = new ClosedLoopConfig()
                 .pid(0.1, 0, 0)
-                .outputRange(EXTEND_RANGE, CLIMB_RANGE)
+                .outputRange(MAIN_EXTEND_RANGE, MAIN_CLIMB_RANGE)
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
-        climberConfig
+        mainClimberConfig
                 // TODO: Find range of rotations needed
                 .smartCurrentLimit(40)
                 .idleMode(IdleMode.kCoast);
 
-        climberConfig.apply(climberClosedLoopConfig);
+        mainClimberConfig.apply(mainClimberClosedLoopConfig);
 
-        climber.configure(climberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        mainClimber.configure(mainClimberConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        // Secondary climber configuration:
+        // TODO: get real motor ID
+        secondaryClimber = new SparkMax(1, MotorType.kBrushless);
+
+        secondaryClimberConfig = new SparkMaxConfig();
+
+        // TODO: Update PID constants
+        secondaryClimberClosedLoopConfig = new ClosedLoopConfig()
+                .pid(0.1, 0, 0)
+                .outputRange(MAIN_EXTEND_RANGE, MAIN_CLIMB_RANGE)
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+
+        secondaryClimberConfig
+                // TODO: Find range of rotations needed
+                .smartCurrentLimit(40)
+                .idleMode(IdleMode.kCoast);
+
+        secondaryClimberConfig.apply(secondaryClimberClosedLoopConfig);
+
+        secondaryClimber.configure(secondaryClimberConfig, ResetMode.kResetSafeParameters,
+                PersistMode.kPersistParameters);
     }
 
-    public void climb() {
+    public void extend(int stage) {
 
-        var controller = climber.getClosedLoopController();
-        controller.setSetpoint(1, ControlType.kPosition);
-    }
+        if (stage == 0) {
+            var controller = mainClimber.getClosedLoopController();
+            controller.setSetpoint(MAIN_EXTEND_RANGE, ControlType.kPosition);
+        }
 
-    public void dumbClimb() {
-        var controller = climber.getClosedLoopController();
-        controller.setSetpoint(-1, ControlType.kPosition);
-
-    }
-
-    public REVLibError extend() {
-
-        var controller = climber.getClosedLoopController();
-        return controller.setSetpoint(EXTEND_RANGE, ControlType.kPosition);
-    }
-
-    public boolean isExtended() {
-        var position = climber.getEncoder().getPosition();
-
-        return position < EXTEND_RANGE + TOLERANCE || position> EXTEND_RANGE - TOLERANCE; // cheks if position is in within the range 
+        if (stage == 1) {
+            var controller = secondaryClimber.getClosedLoopController();
+            controller.setSetpoint(SECONDARY_EXTEND_RANGE, ControlType.kPosition);
+        }
 
     }
 
-    public boolean isRetracted(){
-         var position = climber.getEncoder().getPosition();
+    public void retract(int stage) {
+        if (stage == 0) {
+            var controller = mainClimber.getClosedLoopController();
+            controller.setSetpoint(MAIN_CLIMB_RANGE, ControlType.kPosition);
+        }
 
-        return position < CLIMB_RANGE+ TOLERANCE || position> CLIMB_RANGE - TOLERANCE; // cheks if position is in within the range 
+        if (stage == 1) {
+            var controller = secondaryClimber.getClosedLoopController();
+            controller.setSetpoint(SECONDARY_CLIMB_RANGE, ControlType.kPosition);
+        }
+    }
+
+    public boolean isExtended(int stage) {// mehtod cheks if the motor in extended position
+
+        if (stage == 0) {
+            var position = mainClimber.getEncoder().getPosition();
+            return position < MAIN_EXTEND_RANGE + MAIN_TOLERANCE
+                    || position > MAIN_EXTEND_RANGE - MAIN_TOLERANCE;// adds range for motor to return its position
+
+        }
+        if (stage == 1) {
+            var position = secondaryClimber.getEncoder().getPosition();
+
+            return position < SECONDARY_EXTEND_RANGE + MAIN_TOLERANCE
+                    || position > SECONDARY_EXTEND_RANGE - SECONDARY_TOLERANCE;// adds range for motor to return its position
+
+        }
+        return false;
+    }
+
+    public boolean isRetracted(int stage) {// mehtod cheks if the motor in retracted position
+        if (stage == 0) {
+            var position = mainClimber.getEncoder().getPosition();
+            return position < MAIN_EXTEND_RANGE + MAIN_TOLERANCE
+                    || position > MAIN_EXTEND_RANGE - MAIN_TOLERANCE;// adds range for motor to return its position
+        }
+        if (stage == 1) {
+            var position = secondaryClimber.getEncoder().getPosition();
+
+            return position < SECONDARY_EXTEND_RANGE + SECONDARY_TOLERANCE
+                    || position > SECONDARY_EXTEND_RANGE - SECONDARY_TOLERANCE;// adds range for motor to return its position
+
+        }
+        return false;
 
     }
-    
 
     public void stop() {
-        var controller = climber.getClosedLoopController();
+        var controller = mainClimber.getClosedLoopController();
         controller.setSetpoint(0, ControlType.kPosition);
 
     }
+
 }

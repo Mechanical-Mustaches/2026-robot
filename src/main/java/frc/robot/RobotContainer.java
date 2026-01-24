@@ -117,11 +117,11 @@ public class RobotContainer {
 
                 // Reset the field-centric heading on left bumper press.
                 joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-                
+
                 // TODO: update this button in the future
                 //TODO: apply commands for buttons
-                operatorController.button(1).whileTrue(new ClimberCommand(climberSubsystem, true));
-                operatorController.button(0).whileTrue(new ClimberCommand(climberSubsystem, false));
+                operatorController.button(1).whileTrue(new ClimberCommand(climberSubsystem, true, 1));
+                operatorController.button(0).whileTrue(new ClimberCommand(climberSubsystem, true, 0));
 
                 drivetrain.registerTelemetry(logger::telemeterize);
         }
